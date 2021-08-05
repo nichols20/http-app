@@ -2,10 +2,12 @@ import React, { Component } from "react";
 import axios from "axios"
 import "./App.css";
 
+const apiEndpoint = "https://jsonplaceholder.typicode.com/posts"
 class App extends Component {
   state = {
     posts: []
   };
+
 
   async componentDidMount() {
     /* In this function I wanted to retrieve data from the back end and set the post state
@@ -20,17 +22,24 @@ class App extends Component {
     the async keyword infront of the function declaration. I used object destructuring to just pull the data object
     which carries the array of data we need to access and renamed the object to posts. Finally setting the state
     to the value of the newly declared posts object. */
-    const promise = axios.get("https://jsonplaceholder.typicode.com/posts")
-    console.log(promise)
-    const {data: posts }= await axios.get("https://jsonplaceholder.typicode.com/posts")
+    const {data: posts }= await axios.get(apiEndpoint)
     this.setState({posts})
   }
 
 
-  handleAdd = () => {
-    console.log("Add");
-
+  handleAdd = async () => {
+    /* This handleAdd method is going to be called every time the user clicks the add button resulting
+    in a post being pushed to the posts array then populated in the table. To test this first I created an object
+    that takes two properties title and body. this object is then posted into the posts database with axios.post()
+    The first arguement again is the url where we're sending this data and the second is the object carrying the value of
+    the data we're posting. Then I created a posts array that begins with the new post object created. Then spreading
+    every other post following it. Finally I set the state to the new posts array created and it should return with all the posts including
+    the new one that was just added. */
     const obj = { title: 'a', body: 'b'}
+    const {data: post} = await axios.post(apiEndpoint, obj)
+
+    const posts = [post, ...this.state.posts]
+    this.setState({posts})
   };
 
   handleUpdate = post => {
