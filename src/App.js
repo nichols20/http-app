@@ -56,10 +56,32 @@ class App extends Component {
   };
 
   handleDelete = async post => {
-    await axios.delete(`${apiEndpoint}/${post.id}`)
+    /* A current problem I wanted to fix was when A user interacts with the application UI there is a half second
+    delay to render the updated UI. This was happening because in my first implementation I was calling the server
+    first and then I would set the state afterwards. This could be known as a pessimistic update. To change this We would
+    want to implement an optimistic update which is the assumption that the server call will succeed on most occasions. 
+    To do this first I created an object originalPosts which takes the value of the posts array before the state change. That way 
+    we can return the state to it's former form before an update was called. Next I created a new posts object that takes an array as the 
+    result of the posts.filter method which goes throw each object in the array and deletes the object matching the same id as the post id 
+    selected. This is now when we set the state to the new posts array rendering close to instancely. After this logic we need to make sure
+    that the UI returns to its original state when an error to the server call occurs. To do this I used a try & catch method. I placed
+    the acios.delete method inside of the try method then created a catch that takes an error  and will return an alert that something 
+    had went wrong following another setState of the posts array to the array created in the beginning of this method original posts.   */
+    const originalPosts = this.state.posts
 
     const posts = this.state.posts.filter(p => p.id !== post.id)
     this.setState({posts})
+
+    try {
+      await axios.delete(`${apiEndpoint}/${post.id}`)
+      throw new Error('')
+    }
+
+    catch (ex) {
+      alert('something failed while deleting')
+      this.setState({posts: originalPosts})
+    }
+
   };
 
   render() {
@@ -106,3 +128,6 @@ class App extends Component {
 }
 
 export default App;
+
+//Not sure whether or not the call to server will succeed or fail - pessimistic update
+//assuming most of the time the call to the server will succeed - optimistic update
