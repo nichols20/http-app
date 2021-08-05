@@ -42,8 +42,17 @@ class App extends Component {
     this.setState({posts})
   };
 
-  handleUpdate = post => {
-    console.log("Update", post);
+  handleUpdate = async post => {
+    post.title = "Updated"
+    // When using the put method you need to pass the entire post object as the second argument
+    await axios.put(`${apiEndpoint}/${post.id}`, post)
+    
+    const posts = [...this.state.posts]
+    const index = posts.indexOf(post)
+    posts[index] = {...post}
+    this.setState({posts})
+    //In contrast you only need to pass one more properties which are the properties we want to update
+    // axios.patch(`${apiEndpoint}/${post.id}`, {title: post.title})
   };
 
   handleDelete = post => {
