@@ -1,13 +1,32 @@
 import React, { Component } from "react";
-import axios from "axios"
+import axios from "axios";
 import "./App.css";
 
-const apiEndpoint = "https://jsonplaceholder.typicode.com/posts"
+/* Whenever we have a response with an error this function will get called first and then the try catch block next */
+axios.interceptors.response.use(null, (error) => {
+  /* I created a constant that contains the following expression which is an indicator on whether or not the error we are handling is
+  expected or unexpected if there is an error response object and that status holds a value between 400 and less than 500 that means the 
+  error code is expected. */
+  const expectedError =
+    error.response &&
+    error.response.status >= 400 &&
+    error.response.status < 500;
+
+  //If expectedError is falsey meaning it is an unexpected error we log the error and send an alert to the user
+  if (!expectedError) {
+    console.log("logging error", error);
+    alert("an unexpected error occured");
+  }
+
+  /* regardless of an unexpected or expected error we will return a rejected promise; To pass control to our catch block we need to return a rejected promise. */
+  return Promise.reject(error);
+});
+
+const apiEndpoint = "https://jsonplaceholder.typicode.com/posts";
 class App extends Component {
   state = {
-    posts: []
+    posts: [],
   };
-
 
   async componentDidMount() {
     /* In this function I wanted to retrieve data from the back end and set the post state
@@ -22,10 +41,9 @@ class App extends Component {
     the async keyword infront of the function declaration. I used object destructuring to just pull the data object
     which carries the array of data we need to access and renamed the object to posts. Finally setting the state
     to the value of the newly declared posts object. */
-    const {data: posts }= await axios.get(apiEndpoint)
-    this.setState({posts})
+    const { data: posts } = await axios.get(apiEndpoint);
+    this.setState({ posts });
   }
-
 
   handleAdd = async () => {
     /* This handleAdd method is going to be called every time the user clicks the add button resulting
@@ -35,27 +53,27 @@ class App extends Component {
     the data we're posting. Then I created a posts array that begins with the new post object created. Then spreading
     every other post following it. Finally I set the state to the new posts array created and it should return with all the posts including
     the new one that was just added. */
-    const obj = { title: 'a', body: 'b'}
-    const {data: post} = await axios.post(apiEndpoint, obj)
+    const obj = { title: "a", body: "b" };
+    const { data: post } = await axios.post(apiEndpoint, obj);
 
-    const posts = [post, ...this.state.posts]
-    this.setState({posts})
+    const posts = [post, ...this.state.posts];
+    this.setState({ posts });
   };
 
-  handleUpdate = async post => {
-    post.title = "Updated"
+  handleUpdate = async (post) => {
+    post.title = "Updated";
     // When using the put method you need to pass the entire post object as the second argument
-    await axios.put(`${apiEndpoint}/${post.id}`, post)
-    
-    const posts = [...this.state.posts]
-    const index = posts.indexOf(post)
-    posts[index] = {...post}
-    this.setState({posts})
+    await axios.put(`${apiEndpoint}/${post.id}`, post);
+
+    const posts = [...this.state.posts];
+    const index = posts.indexOf(post);
+    posts[index] = { ...post };
+    this.setState({ posts });
     //In contrast you only need to pass one more properties which are the properties we want to update
     // axios.patch(`${apiEndpoint}/${post.id}`, {title: post.title})
   };
 
-  handleDelete = async post => {
+  handleDelete = async (post) => {
     /* A current problem I wanted to fix was when A user interacts with the application UI there is a half second
     delay to render the updated UI. This was happening because in my first implementation I was calling the server
     first and then I would set the state afterwards. This could be known as a pessimistic update. To change this We would
@@ -67,25 +85,20 @@ class App extends Component {
     that the UI returns to its original state when an error to the server call occurs. To do this I used a try & catch method. I placed
     the acios.delete method inside of the try method then created a catch that takes an error  and will return an alert that something 
     had went wrong following another setState of the posts array to the array created in the beginning of this method original posts.   */
-    const originalPosts = this.state.posts
+    const originalPosts = this.state.posts;
 
-    const posts = this.state.posts.filter(p => p.id !== post.id)
-    this.setState({posts})
+    const posts = this.state.posts.filter((p) => p.id !== post.id);
+    this.setState({ posts });
 
+    /*This next section is my solution to handling errors. After we set the state to the new post array we need to test the current even we're 
+    handling to make sure everything is working properly.   */
     try {
-      await axios.delete(`${apiEndpoint}/${post.id}`)
+      await axios.delete(`s${apiEndpoint}/${post.id}`);
+    } catch (ex) {
+      if (ex.response && ex.response.status === 404)
+        alert("this post has already been deleted");
+      this.setState({ posts: originalPosts });
     }
-
-    catch (ex) {
-      
-      if (ex.response && ex.response.status === 404) alert ("this post has already been deleted")
-      else {
-        console.log('logging error', ex)
-        alert('something failed while deleting')
-      }
-      this.setState({posts: originalPosts})
-    }
-
   };
 
   render() {
@@ -103,7 +116,7 @@ class App extends Component {
             </tr>
           </thead>
           <tbody>
-            {this.state.posts.map(post => (
+            {this.state.posts.map((post) => (
               <tr key={post.id}>
                 <td>{post.title}</td>
                 <td>
