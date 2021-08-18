@@ -1,26 +1,6 @@
 import React, { Component } from "react";
-import axios from "axios";
+import http from "./services/httpservice";
 import "./App.css";
-
-/* Whenever we have a response with an error this function will get called first and then the try catch block next */
-axios.interceptors.response.use(null, (error) => {
-  /* I created a constant that contains the following expression which is an indicator on whether or not the error we are handling is
-  expected or unexpected if there is an error response object and that status holds a value between 400 and less than 500 that means the 
-  error code is expected. */
-  const expectedError =
-    error.response &&
-    error.response.status >= 400 &&
-    error.response.status < 500;
-
-  //If expectedError is falsey meaning it is an unexpected error we log the error and send an alert to the user
-  if (!expectedError) {
-    console.log("logging error", error);
-    alert("an unexpected error occured");
-  }
-
-  /* regardless of an unexpected or expected error we will return a rejected promise; To pass control to our catch block we need to return a rejected promise. */
-  return Promise.reject(error);
-});
 
 const apiEndpoint = "https://jsonplaceholder.typicode.com/posts";
 class App extends Component {
@@ -41,7 +21,7 @@ class App extends Component {
     the async keyword infront of the function declaration. I used object destructuring to just pull the data object
     which carries the array of data we need to access and renamed the object to posts. Finally setting the state
     to the value of the newly declared posts object. */
-    const { data: posts } = await axios.get(apiEndpoint);
+    const { data: posts } = await http.get(apiEndpoint);
     this.setState({ posts });
   }
 
@@ -54,7 +34,7 @@ class App extends Component {
     every other post following it. Finally I set the state to the new posts array created and it should return with all the posts including
     the new one that was just added. */
     const obj = { title: "a", body: "b" };
-    const { data: post } = await axios.post(apiEndpoint, obj);
+    const { data: post } = await http.post(apiEndpoint, obj);
 
     const posts = [post, ...this.state.posts];
     this.setState({ posts });
@@ -63,7 +43,7 @@ class App extends Component {
   handleUpdate = async (post) => {
     post.title = "Updated";
     // When using the put method you need to pass the entire post object as the second argument
-    await axios.put(`${apiEndpoint}/${post.id}`, post);
+    await http.put(`${apiEndpoint}/${post.id}`, post);
 
     const posts = [...this.state.posts];
     const index = posts.indexOf(post);
@@ -93,7 +73,7 @@ class App extends Component {
     /*This next section is my solution to handling errors. After we set the state to the new post array we need to test the current even we're 
     handling to make sure everything is working properly.   */
     try {
-      await axios.delete(`s${apiEndpoint}/${post.id}`);
+      await http.delete(`s${apiEndpoint}/${post.id}`);
     } catch (ex) {
       if (ex.response && ex.response.status === 404)
         alert("this post has already been deleted");
