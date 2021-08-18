@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 import http from "./services/httpservice";
+import config from "./config.json";
 import "./App.css";
-
-const apiEndpoint = "https://jsonplaceholder.typicode.com/posts";
 class App extends Component {
   state = {
     posts: [],
@@ -21,7 +20,7 @@ class App extends Component {
     the async keyword infront of the function declaration. I used object destructuring to just pull the data object
     which carries the array of data we need to access and renamed the object to posts. Finally setting the state
     to the value of the newly declared posts object. */
-    const { data: posts } = await http.get(apiEndpoint);
+    const { data: posts } = await http.get(config.apiEndpoint);
     this.setState({ posts });
   }
 
@@ -34,7 +33,7 @@ class App extends Component {
     every other post following it. Finally I set the state to the new posts array created and it should return with all the posts including
     the new one that was just added. */
     const obj = { title: "a", body: "b" };
-    const { data: post } = await http.post(apiEndpoint, obj);
+    const { data: post } = await http.post(config.apiEndpoint, obj);
 
     const posts = [post, ...this.state.posts];
     this.setState({ posts });
@@ -43,7 +42,7 @@ class App extends Component {
   handleUpdate = async (post) => {
     post.title = "Updated";
     // When using the put method you need to pass the entire post object as the second argument
-    await http.put(`${apiEndpoint}/${post.id}`, post);
+    await http.put(`${config.apiEndpoint}/${post.id}`, post);
 
     const posts = [...this.state.posts];
     const index = posts.indexOf(post);
@@ -73,7 +72,7 @@ class App extends Component {
     /*This next section is my solution to handling errors. After we set the state to the new post array we need to test the current even we're 
     handling to make sure everything is working properly.   */
     try {
-      await http.delete(`s${apiEndpoint}/${post.id}`);
+      await http.delete(`s${config.apiEndpoint}/${post.id}`);
     } catch (ex) {
       if (ex.response && ex.response.status === 404)
         alert("this post has already been deleted");
