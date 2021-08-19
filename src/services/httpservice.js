@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "react-toastify";
 
 /* Whenever we have a response with an error this function will get called first and then the try catch block next */
 axios.interceptors.response.use(null, (error) => {
@@ -13,7 +14,7 @@ axios.interceptors.response.use(null, (error) => {
   //If expectedError is falsey meaning it is an unexpected error we log the error and send an alert to the user
   if (!expectedError) {
     console.log("logging error", error);
-    alert("an unexpected error occured");
+    toast.error("an unexpected error occured");
   }
 
   /* regardless of an unexpected or expected error we will return a rejected promise; To pass control to our catch block we need to return a rejected promise. */
