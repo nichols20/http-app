@@ -1,5 +1,5 @@
 import axios from "axios";
-import * as Sentry from "@sentry/react";
+import logger from "./logservice";
 import { toast } from "react-toastify";
 
 /* Whenever we have a response with an error this function will get called first and then the try catch block next */
@@ -14,7 +14,7 @@ axios.interceptors.response.use(null, (error) => {
 
   //If expectedError is falsey meaning it is an unexpected error we log the error and send an alert to the user
   if (!expectedError) {
-    Sentry.captureException(error);
+    logger.log(error);
     toast.error("an unexpected error occured");
   }
 
